@@ -89,17 +89,25 @@ wechaty
 
 void wechaty.start()
 
-
-process.on('line', (data) => {
-  if (data === 'logs') {
-    logs.forEach(log => {
-      console[log.type](log.text)
-    })
-  }
-})
-
-process.on('SIGINT', async () => {
+async function exit () {
   debug.log('Shutting down...')
   await wechaty.stop()
   process.exit()
+}
+
+process.stdin.on('data', async (buffer) => {
+  const line = buffer.toString().trim()
+
+  if (line === 'logs') {
+    logs.forEach(log => {
+      console[log.type](log.text)
+    })
+  } else if (line === 'logout') {
+    await wechaty.logout()
+    logs.splice(0, logs.length)
+  } else if (line === 'exit') {
+    await exit()
+  }
 })
+
+process.on('SIGINT', exit)
