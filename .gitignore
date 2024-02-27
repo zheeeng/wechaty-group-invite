@@ -1,0 +1,11 @@
+node_modules
+.DS_Store
+dist
+*.local
+*.tgz
+*.zip
+.eslintcache
+*.tsbuildinfo
+.vscode
+.idea
+.pnpm-debug.log
