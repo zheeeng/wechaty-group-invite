@@ -102,58 +102,75 @@ wechaty
     debug.error(`遇到错误：${String(error)}`)
   })
   .on('message', async (message) => {
-    const messageType = message.type()
-    const name = message.talker().name()
-
-    debug.chat(`消息类型：${messageType}`)
-    debug.chat(`消息发送者备注名：${name}`)
-
-    if (messageType !== wechaty.Message.Type.Text) {
-      return
-    }
-
-    const text = message.text()
-    debug.chat(`收到消息：${text}`)
-
-    if (text !== '进群' && text !== '入群') {
-      return
-    }
-
-    debug.log(`收到进群请求：${name}`)
-
-    const targetGroup = await wechaty.Room.find(targetGroupName)
-
-    if (targetGroup) {
-      await targetGroup.add(message.talker())
-      debug.log(`已邀请 ${name} 加入群聊 ${targetGroupName}`)
-      await targetGroup.say(`欢迎 ${name} 加入群聊！`)
-    } else {
-      debug.log(`未找到指定群聊 ${targetGroupName}`)
+    try {
+      const messageType = message.type()
+      const name = message.talker().name()
+  
+      debug.chat(`消息类型：${messageType}`)
+      debug.chat(`消息发送者备注名：${name}`)
+  
+      if (messageType !== wechaty.Message.Type.Text) {
+        return
+      }
+  
+      const text = message.text()
+      debug.chat(`收到消息：${text}`)
+  
+      if (text !== '进群' && text !== '入群') {
+        return
+      }
+  
+      debug.log(`收到进群请求：${name}`)
+  
+      const targetGroup = await wechaty.Room.find(targetGroupName)
+  
+      if (targetGroup) {
+        await targetGroup.add(message.talker())
+        debug.log(`已邀请 ${name} 加入群聊 ${targetGroupName}`)
+        await targetGroup.say(`欢迎 ${name} 加入群聊！`)
+      } else {
+        debug.log(`未找到指定群聊 ${targetGroupName}`)
+      }
+    } catch (error) {
+      debug.error(`处理消息时遇到错误：${String(error)}`)
     }
   })
   .on('friendship', async (friendship) => {
-    const contactName = friendship.contact().name()
-    debug.log(`接收到好友请求：${contactName}`)
+    try {
+      const contactName = friendship.contact().name()
+      debug.log(`接收到好友请求：${contactName}`)
 
-    await delay(actionTimeout)
-    await friendship.accept()
-    debug.log(`已接受好友请求：${contactName}`)
+      await delay(actionTimeout)
+      await friendship.accept()
+      debug.log(`已接受好友请求：${contactName}`)
 
-    await delay(actionTimeout)
-    await friendship.contact().say(`你好，我是${whoAmI}，回复“进群”我将邀请你加入"${targetGroupName}"。`)
-    debug.log(`已向好友 ${contactName} 发送欢迎消息`)
+      await delay(actionTimeout)
+      await friendship.contact().say(`你好，我是${whoAmI}，回复“进群”我将邀请你加入"${targetGroupName}"。`)
+      debug.log(`已向好友 ${contactName} 发送欢迎消息`)
+    } catch (error) {
+      debug.error(`处理好友请求时遇到错误：${String(error)}`)
+    }
   })
 
 void wechaty.start()
 
 async function exit () {
-  debug.log('Shutting down...')
-  await wechaty.stop()
-  process.exit()
+  try {
+    debug.log('Shutting down...')
+    await wechaty.stop()
+  } catch (error) {
+    debug.error(`退出时遇到错误：${String(error)}`)
+  } finally {
+    process.exit()
+  }
 }
 
 async function logout () {
-  await wechaty.logout()
+  try {
+    await wechaty.logout()
+  } catch (error) {
+    debug.error(`登出时遇到错误：${String(error)}`)
+  }
 }
 
 function formatTimestamp(timestamp: number, timeZone: string, locale = 'en-US') {
